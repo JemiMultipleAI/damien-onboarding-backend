@@ -83,25 +83,25 @@ async function runTests(): Promise<void> {
   console.log("🚀 Starting webhook tests...");
   console.log("API URL:", API_URL);
   
-  // Test 1: Conversation Started
+  // Test 1: Conversation Started (Managing Items - Initiator, videoId "4")
   await testWebhook("conversation.started", {
     event: "conversation.started",
     conversation_id: `test-conv-${Date.now()}`,
-    video_id: "1",
+    video_id: "4",
     user_id: "default",
   });
 
   // Wait a bit between tests
   await new Promise(resolve => setTimeout(resolve, 1000));
 
-  // Test 2: Conversation Completed (with correct answers)
+  // Test 2: Conversation Completed (with correct answers for videoId "4")
   const conversationId = `test-conv-${Date.now()}`;
   
   // First start a conversation
   await testWebhook("conversation.started", {
     event: "conversation.started",
     conversation_id: conversationId,
-    video_id: "1",
+    video_id: "4",
     user_id: "default",
   });
 
@@ -111,11 +111,11 @@ async function runTests(): Promise<void> {
   await testWebhook("conversation.completed", {
     event: "conversation.completed",
     conversation_id: conversationId,
-    video_id: "1",
+    video_id: "4",
     user_id: "default",
     answers: {
-      "q1-1": "workflow automation",
-      "q1-2": "process management"
+      "q4-1": "create and manage",
+      "q4-2": "create submit track"
     },
     metadata: {
       duration: 120,
@@ -123,14 +123,14 @@ async function runTests(): Promise<void> {
     }
   });
 
-  // Test 3: Conversation Completed (with incorrect answers)
+  // Test 3: Conversation Completed (with incorrect answers for videoId "4")
   await new Promise(resolve => setTimeout(resolve, 1000));
   
   const conversationId2 = `test-conv-${Date.now()}`;
   await testWebhook("conversation.started", {
     event: "conversation.started",
     conversation_id: conversationId2,
-    video_id: "2",
+    video_id: "4",
     user_id: "default",
   });
 
@@ -139,11 +139,11 @@ async function runTests(): Promise<void> {
   await testWebhook("conversation.completed", {
     event: "conversation.completed",
     conversation_id: conversationId2,
-    video_id: "2",
+    video_id: "4",
     user_id: "default",
     answers: {
-      "q2-1": "wrong answer",
-      "q2-2": "another wrong answer"
+      "q4-1": "wrong answer",
+      "q4-2": "another wrong answer"
     }
   });
 

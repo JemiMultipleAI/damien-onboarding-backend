@@ -29,12 +29,8 @@ cp .env.example .env
 PORT=3001
 ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
 
-# ElevenLabs Agent IDs (one per video)
-ELEVENLABS_AGENT_ID_1=your-agent-id-for-video-1
-ELEVENLABS_AGENT_ID_2=your-agent-id-for-video-2
-ELEVENLABS_AGENT_ID_3=your-agent-id-for-video-3
-ELEVENLABS_AGENT_ID_4=your-agent-id-for-video-4
-ELEVENLABS_AGENT_ID_5=your-agent-id-for-video-5
+# ElevenLabs Agent ID (single video: Managing Items - Initiator, videoId "4")
+ELEVENLABS_AGENT_ID_4=your-agent-id-for-managing-items-initiator
 
 FRONTEND_URL=http://localhost:8080
 DATABASE_URL=postgresql://username:password@localhost:5432/kissflow_onboarding
