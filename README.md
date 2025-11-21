@@ -29,10 +29,14 @@ cp .env.example .env
 PORT=3001
 ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
 
-# ElevenLabs Agent ID (single video: Managing Items - Initiator, videoId "4")
+# ElevenLabs Agent IDs
+# Video agent (Managing Items - Initiator, videoId "4")
 ELEVENLABS_AGENT_ID_4=your-agent-id-for-managing-items-initiator
 
-FRONTEND_URL=http://localhost:8080
+# Michael - AI Assistant for landing page product demo
+ELEVENLABS_AGENT_ID_MICHAEL=agent_6701kajbn5a1e23tq757q7vh4ang
+
+FRONTEND_URL=http://localhost:3000
 DATABASE_URL=postgresql://username:password@localhost:5432/kissflow_onboarding
 ```
 
