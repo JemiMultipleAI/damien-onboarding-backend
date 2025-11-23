@@ -83,18 +83,19 @@ async function runTests(): Promise<void> {
   console.log("🚀 Starting webhook tests...");
   console.log("API URL:", API_URL);
   
-  // Test 1: Conversation Started (Managing Items - Initiator, videoId "4")
+  // Test 1: Conversation Started (Introduction to KissFlow, videoId "1")
   await testWebhook("conversation.started", {
     event: "conversation.started",
     conversation_id: `test-conv-${Date.now()}`,
-    video_id: "4",
+    video_id: "1",
     user_id: "default",
   });
 
   // Wait a bit between tests
   await new Promise(resolve => setTimeout(resolve, 1000));
 
-  // Test 2: Conversation Completed (with correct answers for videoId "4")
+  // Test 2: Conversation Completed (with correct answers - hybrid validation)
+  // Testing video 4 (Managing Items - Initiator)
   const conversationId = `test-conv-${Date.now()}`;
   
   // First start a conversation
@@ -107,23 +108,25 @@ async function runTests(): Promise<void> {
 
   await new Promise(resolve => setTimeout(resolve, 1000));
 
-  // Then complete it
+  // Then complete it with hybrid validation metadata
   await testWebhook("conversation.completed", {
     event: "conversation.completed",
     conversation_id: conversationId,
     video_id: "4",
     user_id: "default",
     answers: {
-      "q4-1": "create and manage",
-      "q4-2": "create submit track"
+      "q1": "initiators can create and manage items in KissFlow",
+      "q2": "they can create, submit, and track items"
     },
     metadata: {
       duration: 120,
-      questions_asked: 2
+      questions_asked: 2,
+      min_questions: 2,
+      validation_passed: true
     }
   });
 
-  // Test 3: Conversation Completed (with incorrect answers for videoId "4")
+  // Test 3: Conversation Completed (with agent validation failed)
   await new Promise(resolve => setTimeout(resolve, 1000));
   
   const conversationId2 = `test-conv-${Date.now()}`;
@@ -142,15 +145,56 @@ async function runTests(): Promise<void> {
     video_id: "4",
     user_id: "default",
     answers: {
-      "q4-1": "wrong answer",
-      "q4-2": "another wrong answer"
+      "q1": "wrong answer",
+      "q2": "another wrong answer"
+    },
+    metadata: {
+      duration: 180,
+      questions_asked: 2,
+      min_questions: 2,
+      validation_passed: false  // Agent determined answers are incorrect
+    }
+  });
+
+  // Test 4: Conversation Completed (insufficient questions)
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  const conversationId3 = `test-conv-${Date.now()}`;
+  await testWebhook("conversation.started", {
+    event: "conversation.started",
+    conversation_id: conversationId3,
+    video_id: "4",
+    user_id: "default",
+  });
+
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
+  await testWebhook("conversation.completed", {
+    event: "conversation.completed",
+    conversation_id: conversationId3,
+    video_id: "4",
+    user_id: "default",
+    answers: {
+      "q1": "only one answer"
+    },
+    metadata: {
+      duration: 90,
+      questions_asked: 1,
+      min_questions: 2,
+      validation_passed: true
     }
   });
 
   console.log("\n✅ All tests completed!");
+  console.log("\n📝 Test Summary:");
+  console.log("   - Test 1: Conversation started");
+  console.log("   - Test 2: Conversation completed with valid answers (validation_passed: true)");
+  console.log("   - Test 3: Conversation completed with invalid answers (validation_passed: false)");
+  console.log("   - Test 4: Conversation completed with insufficient questions");
   console.log("\n📝 Check your database to verify:");
   console.log("   - active_conversations table for started conversations");
   console.log("   - user_progress table for completed videos");
+  console.log("\n💡 Note: Hybrid validation is now used by default (no hardcoded questions required)");
 }
 
 // Run tests

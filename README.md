@@ -30,11 +30,19 @@ PORT=3001
 ELEVENLABS_API_KEY=your_elevenlabs_api_key_here
 
 # ElevenLabs Agent IDs
-# Video agent (Managing Items - Initiator, videoId "4")
-ELEVENLABS_AGENT_ID_4=your-agent-id-for-managing-items-initiator
+# Video agents (one per video module)
+# Original agent IDs from your configuration:
+ELEVENLABS_AGENT_ID_1=agent_1101kabxsh0jfa0rdzpgs8a5yqck
+ELEVENLABS_AGENT_ID_2=agent_5401kaby4dp4fknr01q4g3r9vn0k
+ELEVENLABS_AGENT_ID_3=agent_7601kaby40sjeega24jttya1xjff
+ELEVENLABS_AGENT_ID_4=agent_2701kaby39ywfq9ansma8qed1bey
+ELEVENLABS_AGENT_ID_5=agent_8101kaby4svmfbc8j524nv79cqv6
 
 # Michael - AI Assistant for landing page product demo
 ELEVENLABS_AGENT_ID_MICHAEL=agent_6701kajbn5a1e23tq757q7vh4ang
+
+# Optional: Enable hardcoded question validation in addition to hybrid validation
+# USE_HARDCODED_VALIDATION=true
 
 FRONTEND_URL=http://localhost:3000
 DATABASE_URL=postgresql://username:password@localhost:5432/kissflow_onboarding
@@ -138,10 +146,23 @@ backend/
 ## 📝 Features
 
 ### Quiz Validation
+The backend supports two validation approaches:
+
+**Hybrid Validation (Default):**
+- Agent-driven question generation and validation
+- No hardcoded questions required
+- Validates based on metadata thresholds:
+  - Minimum questions answered
+  - Agent's validation status
+  - Answer quality checks
+- Flexible and adaptable to different question sets
+
+**Hardcoded Validation (Optional):**
 - Keyword-based answer matching
 - Flexible answer validation (accepts variations)
 - 100% correctness requirement
 - Server-side validation only
+- Enable with `USE_HARDCODED_VALIDATION=true` env variable
 
 ### Progress Tracking
 - PostgreSQL database storage
@@ -177,8 +198,9 @@ Note: The test script now uses TypeScript (`tsx`) to run directly.
 
 This will test:
 - `conversation.started` event
-- `conversation.completed` event (with correct answers)
-- `conversation.completed` event (with incorrect answers)
+- `conversation.completed` event (with correct answers and validation_passed: true)
+- `conversation.completed` event (with validation_passed: false)
+- `conversation.completed` event (with insufficient questions)
 
 See `ELEVENLABS_SETUP.md` for detailed setup instructions.
 
