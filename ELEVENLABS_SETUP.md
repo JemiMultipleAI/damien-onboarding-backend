@@ -41,36 +41,44 @@ Key features:
 The main purpose of KissFlow is to help organizations automate their business processes and workflows.
 ```
 
-#### Conversation Flow
-Configure the agent to:
-1. Greet the user
-2. Ask quiz questions about the video content
-3. Validate answers
-4. Provide feedback
-5. Mark conversation as complete when all questions are answered correctly
+#### System Prompt / Instructions
+Paste the following quiz conversation flow into the agent's **System Prompt** or **Instructions** field:
 
-#### Quiz Questions
-Configure the agent to ask these questions (based on `backend/config/questions.js`):
+```
+You are a quiz assistant for KissFlow onboarding videos.
 
-**Video 1 - Introduction:**
-- "What is the main purpose of KissFlow?"
-- "Can you name one key feature of KissFlow?"
+QUIZ CONVERSATION FLOW:
 
-**Video 2 - Conditional Visibility:**
-- "What is conditional visibility used for?"
-- "When would you use conditional visibility in a form?"
+1. After user watches video, greet and explain you'll test their understanding
+2. Generate 2-3 questions based on key concepts from the video content in your knowledge base
+3. For each question:
+   - Assign a unique ID (q1, q2, q3, etc.)
+   - Ask the question
+   - Wait for answer
+   - Validate answer against your knowledge base
+   - If incorrect: provide feedback, explain correct answer, ask again
+   - If correct: acknowledge and move to next question
+4. Track all questions asked and answers given
+5. Only complete when ALL questions answered correctly
+6. When completing, ensure webhook includes all answers and validation status
 
-**Video 3 - Accessing Process:**
-- "How do you access a process in KissFlow?"
-- "What information can you see when accessing a process?"
+QUESTION GENERATION GUIDELINES:
+- Ask about main concepts from the video
+- Test practical understanding, not just memorization
+- Cover different aspects of the video content
+- Make questions clear and specific
+- Minimum 2 questions, maximum 3-4 questions
 
-**Video 4 - Managing Items (Initiator):**
-- "What can an initiator do with items in KissFlow?"
-- "What actions are available to an initiator?"
+WEBHOOK REQUIREMENTS:
+When conversation completes, you must send webhook with:
+- answers: Object with all question IDs and user answers (e.g., {"q1": "answer", "q2": "answer"})
+- metadata.validation_passed: true if all answers correct, false otherwise
+- metadata.questions_asked: total number of questions asked (must be at least 2)
+- metadata.min_questions: set to 2
+- metadata.duration: conversation duration in seconds
+```
 
-**Video 5 - Managing Items (Assignee):**
-- "What is the role of an assignee in KissFlow?"
-- "How does an assignee know they have tasks?"
+**Note**: The agent will generate questions dynamically based on the video content in the knowledge base. No hardcoded questions are required.
 
 ## Step 2: Configure Webhook
 
@@ -82,10 +90,15 @@ Configure the agent to ask these questions (based on `backend/config/questions.j
    - `conversation.started`
    - `conversation.completed`
 4. Configure webhook payload to include:
-   - `conversation_id`
-   - `video_id` (custom field - pass via agent configuration)
+   - `conversation_id` (auto-populated by ElevenLabs)
+   - `video_id` (set per agent: "1" for Introduction, "2" for Conditional Visibility, "3" for Accessing Process, "4" for Managing Items - Initiator, "5" for Managing Items - Assignee)
    - `user_id` (optional)
-   - `answers` (if available from conversation)
+   - `answers` (required) - Object mapping question IDs to answers: `{"q1": "answer1", "q2": "answer2"}`
+   - `metadata` (required) - Object with:
+     - `min_questions`: 2 (minimum questions required)
+     - `questions_asked`: number of questions asked
+     - `validation_passed`: true/false (agent's validation result)
+     - `duration`: conversation duration in seconds
 
 ### Using ngrok for Local Development
 
@@ -104,14 +117,56 @@ ngrok http 3001
 
 ```env
 # ElevenLabs Agent IDs (one per video)
-ELEVENLABS_AGENT_ID_1=your-agent-id-for-video-1
-ELEVENLABS_AGENT_ID_2=your-agent-id-for-video-2
-ELEVENLABS_AGENT_ID_3=your-agent-id-for-video-3
-ELEVENLABS_AGENT_ID_4=your-agent-id-for-video-4
-ELEVENLABS_AGENT_ID_5=your-agent-id-for-video-5
+# Original agent IDs from your configuration:
+ELEVENLABS_AGENT_ID_1=agent_1101kabxsh0jfa0rdzpgs8a5yqck
+ELEVENLABS_AGENT_ID_2=agent_5401kaby4dp4fknr01q4g3r9vn0k
+ELEVENLABS_AGENT_ID_3=agent_7601kaby40sjeega24jttya1xjff
+ELEVENLABS_AGENT_ID_4=agent_2701kaby39ywfq9ansma8qed1bey
+ELEVENLABS_AGENT_ID_5=agent_8101kaby4svmfbc8j524nv79cqv6
 ```
 
 **Note**: Each video will use its corresponding agent ID. This makes it easy to track which video/module is being completed.
+
+## Validation Approach
+
+The backend now supports **hybrid validation** that doesn't require hardcoded questions:
+
+### How It Works:
+1. **Agent generates questions** dynamically based on video content
+2. **Agent validates answers** against its knowledge base
+3. **Backend validates** using metadata thresholds:
+   - Minimum number of questions answered
+   - Agent's validation status (`validation_passed`)
+   - Answer quality (minimum length)
+
+### Webhook Payload Requirements:
+The agent must send these fields in the webhook:
+
+```json
+{
+  "event": "conversation.completed",
+  "conversation_id": "conv_123",
+  "video_id": "4",
+  "answers": {
+    "q1": "user's answer",
+    "q2": "user's answer"
+  },
+  "metadata": {
+    "min_questions": 2,
+    "questions_asked": 2,
+    "validation_passed": true,
+    "duration": 120
+  }
+}
+```
+
+### Fallback to Hardcoded Validation (Optional):
+If you want to also validate against hardcoded questions for additional security, set this environment variable:
+```env
+USE_HARDCODED_VALIDATION=true
+```
+
+This will run both hybrid validation (primary) and hardcoded question validation (secondary).
 
 ## Step 4: Test the Integration
 

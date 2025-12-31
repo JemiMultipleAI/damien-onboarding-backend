@@ -1,5 +1,5 @@
 import { getQuestionsForVideo } from "../config/questions.js";
-import { Question, ValidationResult, AllAnswersValidation } from "../types/index.js";
+import { Question, ValidationResult, AllAnswersValidation, HybridValidationResult } from "../types/index.js";
 
 /**
  * Check if an answer is correct
@@ -73,6 +73,72 @@ export const validateAllAnswers = (
     allCorrect: allCorrect && allAnswered,
     allAnswered,
     results
+  };
+};
+
+/**
+ * Hybrid validation: Validate answers using agent metadata and thresholds
+ * This approach doesn't require hardcoded questions - relies on agent's validation
+ */
+export const validateAnswersHybrid = (
+  answers: Record<string, string>,
+  metadata?: Record<string, any>
+): HybridValidationResult => {
+  const answerCount = Object.keys(answers).length;
+  const minQuestions = metadata?.min_questions || 2;
+  const questionsAsked = metadata?.questions_asked || answerCount;
+  const agentValidationPassed = metadata?.validation_passed;
+
+  const details: HybridValidationResult['details'] = {};
+
+  // Check 1: Minimum questions threshold
+  if (answerCount < minQuestions) {
+    return {
+      passed: false,
+      reason: `Need at least ${minQuestions} answers, got ${answerCount}`,
+      questionsAnswered: answerCount,
+      minQuestionsRequired: minQuestions,
+      agentValidationPassed,
+      details: { insufficientQuestions: true }
+    };
+  }
+
+  // Check 2: Agent validation (if provided)
+  if (agentValidationPassed === false) {
+    return {
+      passed: false,
+      reason: "Agent validation failed - answers are incorrect",
+      questionsAnswered: answerCount,
+      minQuestionsRequired: minQuestions,
+      agentValidationPassed: false,
+      details: { validationFailed: true }
+    };
+  }
+
+  // Check 3: Answer quality - ensure answers are not empty or too short
+  const MIN_ANSWER_LENGTH = 5;
+  const qualityAnswers = Object.values(answers).filter(
+    a => a && typeof a === 'string' && a.trim().length >= MIN_ANSWER_LENGTH
+  );
+
+  if (qualityAnswers.length < minQuestions) {
+    return {
+      passed: false,
+      reason: `Need at least ${minQuestions} quality answers (min ${MIN_ANSWER_LENGTH} characters), got ${qualityAnswers.length}`,
+      questionsAnswered: answerCount,
+      minQuestionsRequired: minQuestions,
+      agentValidationPassed,
+      details: { lowQualityAnswers: true }
+    };
+  }
+
+  // All checks passed
+  return {
+    passed: true,
+    questionsAnswered: answerCount,
+    minQuestionsRequired: minQuestions,
+    agentValidationPassed: agentValidationPassed !== false,
+    details: {}
   };
 };
 
