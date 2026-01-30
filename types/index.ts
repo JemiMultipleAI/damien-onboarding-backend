@@ -56,6 +56,19 @@ export interface AllAnswersValidation {
   }>;
 }
 
+export interface HybridValidationResult {
+  passed: boolean;
+  reason?: string;
+  questionsAnswered: number;
+  minQuestionsRequired: number;
+  agentValidationPassed?: boolean;
+  details?: {
+    insufficientQuestions?: boolean;
+    validationFailed?: boolean;
+    lowQualityAnswers?: boolean;
+  };
+}
+
 export interface WebhookPayload {
   event: string;
   conversation_id?: string;

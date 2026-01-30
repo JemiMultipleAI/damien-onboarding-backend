@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { validateAllAnswers } from "../services/validation.js";
+import { validateAllAnswers, validateAnswersHybrid } from "../services/validation.js";
 import { 
   saveUserProgress, 
   getActiveConversation, 
@@ -123,23 +123,48 @@ async function handleConversationCompleted(
 
     // If answers are provided in webhook, validate them
     if (answers && typeof answers === "object") {
-      const validation = validateAllAnswers(finalVideoId, answers);
+      // Try hybrid validation first (agent-driven, no hardcoded questions)
+      const hybridValidation = validateAnswersHybrid(answers, metadata);
       
-      if (!validation.allAnswered) {
+      if (!hybridValidation.passed) {
+        console.log("❌ Hybrid validation failed:", hybridValidation.reason);
         return res.status(400).json({
-          error: "Not all questions have been answered",
+          error: hybridValidation.reason || "Validation failed",
           conversation_id,
-          ...validation
+          validation: hybridValidation
         });
       }
 
-      if (!validation.allCorrect) {
-        return res.status(400).json({
-          error: "Not all answers are correct. 100% correctness required.",
-          conversation_id,
-          ...validation
-        });
+      // Fallback: If hybrid validation passes but we want to also check against hardcoded questions
+      // (for backward compatibility or additional validation layer)
+      // This is optional - you can remove this if you only want agent-driven validation
+      const hasHardcodedQuestions = process.env.USE_HARDCODED_VALIDATION === "true";
+      if (hasHardcodedQuestions) {
+        const hardcodedValidation = validateAllAnswers(finalVideoId, answers);
+        
+        if (!hardcodedValidation.allAnswered) {
+          console.log("❌ Hardcoded validation failed: Not all questions answered");
+          return res.status(400).json({
+            error: "Not all questions have been answered",
+            conversation_id,
+            ...hardcodedValidation
+          });
+        }
+
+        if (!hardcodedValidation.allCorrect) {
+          console.log("❌ Hardcoded validation failed: Answers incorrect");
+          return res.status(400).json({
+            error: "Not all answers are correct. 100% correctness required.",
+            conversation_id,
+            ...hardcodedValidation
+          });
+        }
       }
+
+      console.log("✅ Validation passed:", {
+        questionsAnswered: hybridValidation.questionsAnswered,
+        agentValidation: hybridValidation.agentValidationPassed
+      });
     }
 
     // Mark video as complete in database
