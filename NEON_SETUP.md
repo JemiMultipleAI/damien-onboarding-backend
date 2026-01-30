@@ -87,3 +87,8 @@ However, **you must also set SSL manually** in this case. The connection string 
 
 When deploying to production (Railway, Render, etc.), simply set the `DATABASE_URL` environment variable in your hosting platform's dashboard. The connection code will automatically handle SSL for Neon connections.
 
+
+
+
+
+
