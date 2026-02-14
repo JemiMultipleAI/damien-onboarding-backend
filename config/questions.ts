@@ -1,6 +1,6 @@
 import { VideoQuestions } from "../types/index.js";
 
-// Questions and answers for all 5 onboarding modules
+// Questions and answers for all 6 onboarding modules
 export const videoQuestions: VideoQuestions = {
   "1": [
     {
@@ -70,6 +70,20 @@ export const videoQuestions: VideoQuestions = {
       question: "How does an assignee know they have tasks?",
       correctAnswer: "notifications dashboard",
       keywords: ["notification", "dashboard", "alert", "reminder", "indicator", "see"]
+    }
+  ],
+  "6": [
+    {
+      id: "q6-1",
+      question: "What is the main topic covered in this video?",
+      correctAnswer: "video topic content",
+      keywords: ["topic", "content", "video", "covered", "discussed", "main", "subject", "about"]
+    },
+    {
+      id: "q6-2",
+      question: "What is one key takeaway from this video?",
+      correctAnswer: "key learning point insight",
+      keywords: ["key", "takeaway", "learning", "point", "important", "main", "insight", "lesson"]
     }
   ]
 };

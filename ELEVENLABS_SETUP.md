@@ -12,7 +12,7 @@ This guide will help you set up ElevenLabs Conversational AI agents for the Kiss
 
 1. Go to [ElevenLabs Dashboard](https://elevenlabs.io/)
 2. Navigate to **Conversational AI** > **Agents**
-3. Create **5 separate main agents** (one for each video module)
+3. Create **6 separate main agents** (one for each video module)
    - **Important**: Create them as separate main agents, not subagents
    - This approach works with any ElevenLabs plan and is simpler to manage
 
@@ -91,7 +91,7 @@ When conversation completes, you must send webhook with:
    - `conversation.completed`
 4. Configure webhook payload to include:
    - `conversation_id` (auto-populated by ElevenLabs)
-   - `video_id` (set per agent: "1" for Introduction, "2" for Conditional Visibility, "3" for Accessing Process, "4" for Managing Items - Initiator, "5" for Managing Items - Assignee)
+   - `video_id` (set per agent: "1" for Introduction, "2" for Conditional Visibility, "3" for Accessing Process, "4" for Managing Items - Initiator, "5" for Managing Items - Assignee, "6" for Video)
    - `user_id` (optional)
    - `answers` (required) - Object mapping question IDs to answers: `{"q1": "answer1", "q2": "answer2"}`
    - `metadata` (required) - Object with:
@@ -112,7 +112,7 @@ ngrok http 3001
 
 ## Step 3: Get Agent IDs
 
-1. After creating all 5 agents, copy each **Agent ID** from the agent settings
+1. After creating all 6 agents, copy each **Agent ID** from the agent settings
 2. Add them to your `.env` file:
 
 ```env
@@ -123,6 +123,7 @@ ELEVENLABS_AGENT_ID_2=agent_5401kaby4dp4fknr01q4g3r9vn0k
 ELEVENLABS_AGENT_ID_3=agent_7601kaby40sjeega24jttya1xjff
 ELEVENLABS_AGENT_ID_4=agent_2701kaby39ywfq9ansma8qed1bey
 ELEVENLABS_AGENT_ID_5=agent_8101kaby4svmfbc8j524nv79cqv6
+ELEVENLABS_AGENT_ID_6=agent_8501khatqfqxe648yhywj5fzcsvx
 ```
 
 **Note**: Each video will use its corresponding agent ID. This makes it easy to track which video/module is being completed.

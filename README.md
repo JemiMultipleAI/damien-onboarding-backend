@@ -37,6 +37,7 @@ ELEVENLABS_AGENT_ID_2=agent_5401kaby4dp4fknr01q4g3r9vn0k
 ELEVENLABS_AGENT_ID_3=agent_7601kaby40sjeega24jttya1xjff
 ELEVENLABS_AGENT_ID_4=agent_2701kaby39ywfq9ansma8qed1bey
 ELEVENLABS_AGENT_ID_5=agent_8101kaby4svmfbc8j524nv79cqv6
+ELEVENLABS_AGENT_ID_6=agent_8501khatqfqxe648yhywj5fzcsvx
 
 # Michael - AI Assistant for landing page product demo
 ELEVENLABS_AGENT_ID_MICHAEL=agent_6701kajbn5a1e23tq757q7vh4ang
